@@ -1,4 +1,5 @@
 import random as rd
+import json
 
 def assign_seat(seats, passenger_no, absent_minded=False):
     availible_seats = [i for i,passenger in enumerate(seats) if passenger == 0]
@@ -30,7 +31,18 @@ def create_absent_minded_list(seat_no, number_of_passengers, method="listed"): #
     
     return absent_list
 
-def run_single_simulation(seat_no, absent_no, absent_method="listed"):
+def evaluate_simulation(seats):
+    evalualtion = []
+
+    for seat, passenger in enumerate(seats):
+        if seat+1 == passenger:
+            evalualtion.append(True)
+        else:
+            evalualtion.append(False)
+
+    return evalualtion
+
+def run_single_simulation(seat_no, absent_no, absent_method="listed", consider_all_seats=False):
     seats = [0] * seat_no
     
     # Absent minded passenger
@@ -44,23 +56,48 @@ def run_single_simulation(seat_no, absent_no, absent_method="listed"):
 
     #print(seats)  ## Temp
 
-    if seats[-1] == seat_no:
-        return True
-    else:
-        return False
+    evaluation = evaluate_simulation(seats)
 
-def run_multiple_simulations(run_no, seat_no, absent_no, absent_method="listed"):
+    if consider_all_seats:
+        return evaluation
+    else:
+        return evaluation[-1]
+
+
+def run_multiple_simulations(run_no, seat_no, absent_no, absent_method="listed", consider_all_seats=False):
     results = []
     for _ in range(run_no):
-        results.append(run_single_simulation(seat_no, absent_no, absent_method))
+        results.append(run_single_simulation(seat_no, absent_no, absent_method=absent_method, consider_all_seats=consider_all_seats))
 
        # print(results)  ## Temp
 
-    prob = results.count(True)/len(results)
+    if consider_all_seats:
+        prob_list = []
+        for seat in range(seat_no):
+            prob_count = 0
+            for run_eval in results:
+                if run_eval[seat]:
+                    prob_count += 1
+                else:
+                    prob_count += 0
+
+            prob = prob_count / len(results)
+            prob_list.append(prob)
+        prob = prob_list[-1]
+    else:
+        prob = results.count(True) / len(results)
+
+    if consider_all_seats:
+        with open(".\Passenger_Probs.json", "w") as f:
+            json.dump(prob_list, f, indent=4)
 
     print(f"Number of runs: {run_no},")
     print(f"Number of seats: {seat_no},")
     print(f"Prob of final passenger getting their seat: {prob},")
 
+    if consider_all_seats:
+        print(f"Summary is saved at {str(f.name)},")
+
 if __name__ == '__main__':
-    run_multiple_simulations(500, 100, 1)
+    run_multiple_simulations(50000, 100, 1, consider_all_seats=True)
+

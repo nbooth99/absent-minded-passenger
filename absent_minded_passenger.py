@@ -22,12 +22,21 @@ def create_absent_minded_list(seat_no, number_of_passengers, method="listed"): #
     if method == "listed":
         for i in range(number_of_passengers):
             absent_list.append(i+1)
-    if method == "prime":
+    elif method == "prime":
         prime_list = [i for i in range(2, seat_no) if 0 not in [i%n for n in range(2,i)]]
 
         for i in range(seat_no):
             if i+1 in prime_list:
                 absent_list.append(i+1)
+    elif method == "odd":
+        for i in range(seat_no):
+            if (i+1)%2 == 1:
+                absent_list.append(i+1)
+    elif method == "even":
+        for i in range(seat_no):
+            if (i+1)%2 == 0:
+                absent_list.append(i+1)
+    
     
     return absent_list
 
@@ -99,5 +108,5 @@ def run_multiple_simulations(run_no, seat_no, absent_no, absent_method="listed",
         print(f"Summary is saved at {str(f.name)},")
 
 if __name__ == '__main__':
-    run_multiple_simulations(50000, 100, 1, consider_all_seats=True)
+    run_multiple_simulations(50000, 100, 1, absent_method="even", consider_all_seats=True)
 
